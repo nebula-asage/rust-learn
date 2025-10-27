@@ -7,7 +7,7 @@ pub struct UserService<T: UserRepositoryTrait> {
 }
 
 #[derive(Debug)]
-#[allow(dead_code)]  // 全てのバリアントがテストで使用されるため
+#[allow(dead_code)] // 全てのバリアントがテストで使用されるため
 pub enum UserError {
     InvalidEmail(String),
     InvalidUsername(String),
