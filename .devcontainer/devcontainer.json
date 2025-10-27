@@ -3,5 +3,16 @@
     "build": {
         "dockerfile": "Dockerfile"
     },
-    "customizations": {}
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "rust-lang.rust-analyzer",
+                "fill-labs.dependi",
+                "vadimcn.vscode-lldb",
+                "ritwickdey.LiveServer",
+                "JScearcy.rust-doc-viewer",
+                "eamodio.gitlens"
+            ]
+        }
+    }
 }
