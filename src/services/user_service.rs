@@ -7,6 +7,7 @@ pub struct UserService<T: UserRepositoryTrait> {
 }
 
 #[derive(Debug)]
+#[allow(dead_code)]  // 全てのバリアントがテストで使用されるため
 pub enum UserError {
     InvalidEmail(String),
     InvalidUsername(String),
@@ -152,7 +153,7 @@ impl<T: UserRepositoryTrait> UserService<T> {
     }
 
     fn validate_age(&self, age: u32) -> Result<(), UserError> {
-        if age < 0 || age > 150 {
+        if age > 150 {
             return Err(UserError::InvalidAge(
                 "Age must be between 0 and 150".to_string(),
             ));
