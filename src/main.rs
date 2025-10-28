@@ -1,9 +1,4 @@
-mod commands;
-mod models;
-mod repositories;
-mod services;
-
-use commands::user_command::UserCommand;
+use rust_learn::commands::user_command::UserCommand;
 use std::env;
 
 fn print_usage() {
