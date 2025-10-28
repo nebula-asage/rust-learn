@@ -58,7 +58,7 @@ impl<T: UserRepositoryTrait> UserService<T> {
 
         self.repository
             .save(&user)
-            .map_err(|e| UserError::RepositoryError(e))?;
+            .map_err(UserError::RepositoryError)?;
 
         Ok(user)
     }
@@ -91,7 +91,7 @@ impl<T: UserRepositoryTrait> UserService<T> {
 
         self.repository
             .save(&user)
-            .map_err(|e| UserError::RepositoryError(e))?;
+            .map_err(UserError::RepositoryError)?;
 
         Ok(user)
     }
@@ -105,14 +105,14 @@ impl<T: UserRepositoryTrait> UserService<T> {
     pub fn list_users(&self) -> Result<Vec<User>, UserError> {
         self.repository
             .find_all()
-            .map_err(|e| UserError::RepositoryError(e))
+            .map_err(UserError::RepositoryError)
     }
 
     pub fn delete_user(&self, email: &str) -> Result<(), UserError> {
         if !self
             .repository
             .delete(email)
-            .map_err(|e| UserError::RepositoryError(e))?
+            .map_err(UserError::RepositoryError)?
         {
             return Err(UserError::UserNotFound(format!(
                 "User with email {} not found",

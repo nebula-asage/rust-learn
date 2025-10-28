@@ -20,6 +20,12 @@ pub struct UserRepository {
     file_path: String,
 }
 
+impl Default for UserRepository {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl UserRepository {
     pub fn new() -> Self {
         let file_path = env::var("USER_DATA_FILE").unwrap_or_else(|_| "userdata.json".to_string());

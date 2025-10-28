@@ -6,6 +6,12 @@ pub struct UserCommand {
     service: UserService<UserRepository>,
 }
 
+impl Default for UserCommand {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl UserCommand {
     pub fn new() -> Self {
         let repository = UserRepository::new();
