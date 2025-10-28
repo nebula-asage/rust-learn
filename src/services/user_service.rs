@@ -2,19 +2,29 @@ use crate::models::user::User;
 use crate::repositories::user_repository::UserRepositoryTrait;
 use regex::Regex;
 
+/// ユーザー管理のビジネスロジックを実装するサービス
 pub struct UserService<T: UserRepositoryTrait> {
+    /// ユーザーデータの永続化を担当するリポジトリ
     repository: T,
 }
 
+/// ユーザー操作に関連するエラー
 #[derive(Debug)]
 #[allow(dead_code)] // 全てのバリアントがテストで使用されるため
 pub enum UserError {
+    /// メールアドレスの形式が不正な場合のエラー
     InvalidEmail(String),
+    /// ユーザー名が不正な場合のエラー
     InvalidUsername(String),
+    /// 電話番号が不正な場合のエラー
     InvalidPhone(String),
+    /// 年齢が不正な場合のエラー
     InvalidAge(String),
+    /// ユーザーが見つからない場合のエラー
     UserNotFound(String),
+    /// リポジトリ操作に失敗した場合のエラー
     RepositoryError(String),
+    /// 既に存在するユーザーを作成しようとした場合のエラー
     UserAlreadyExists(String),
 }
 
@@ -25,10 +35,54 @@ impl From<String> for UserError {
 }
 
 impl<T: UserRepositoryTrait> UserService<T> {
+    /// 新しいUserServiceインスタンスを作成します。
+    ///
+    /// # 引数
+    /// * `repository` - ユーザーデータの永続化を担当するリポジトリ
+    ///
+    /// # 戻り値
+    /// * `Self` - 新しいUserServiceインスタンス
     pub fn new(repository: T) -> Self {
         Self { repository }
     }
 
+    /// 新しいユーザーを作成します。
+    ///
+    /// # 引数
+    /// * `email` - ユーザーのメールアドレス
+    /// * `username` - ユーザー名（3文字以上）
+    /// * `phone` - 電話番号（10桁以上の数字）
+    /// * `age` - 年齢（0-150の範囲）
+    ///
+    /// # 戻り値
+    /// * `Ok(User)` - 作成されたユーザー情報
+    ///
+    /// # エラー
+    /// * `UserError::InvalidEmail` - メールアドレスの形式が不正な場合
+    /// * `UserError::InvalidUsername` - ユーザー名が不正な場合
+    /// * `UserError::InvalidPhone` - 電話番号が不正な場合
+    /// * `UserError::InvalidAge` - 年齢が不正な場合
+    /// * `UserError::UserAlreadyExists` - 同じメールアドレスのユーザーが既に存在する場合
+    /// * `UserError::RepositoryError` - データの保存に失敗した場合
+    ///   新しいユーザーを作成します。
+    ///
+    /// # 引数
+    /// * `email` - メールアドレス
+    /// * `username` - ユーザー名
+    /// * `phone` - 電話番号
+    /// * `age` - 年齢
+    ///
+    /// # 戻り値
+    /// * `Ok(User)` - 作成されたユーザー情報
+    ///
+    /// # Errors
+    /// 以下の場合にエラーを返します：
+    /// * `UserError::InvalidEmail` - メールアドレスの形式が不正な場合
+    /// * `UserError::InvalidUsername` - ユーザー名が3文字未満の場合
+    /// * `UserError::InvalidPhone` - 電話番号が10桁未満の場合
+    /// * `UserError::InvalidAge` - 年齢が150歳を超える場合
+    /// * `UserError::UserAlreadyExists` - 同じメールアドレスのユーザーが既に存在する場合
+    /// * `UserError::RepositoryError` - データの永続化に失敗した場合
     pub fn create_user(
         &self,
         email: String,
@@ -63,6 +117,41 @@ impl<T: UserRepositoryTrait> UserService<T> {
         Ok(user)
     }
 
+    /// 既存のユーザー情報を更新します。
+    ///
+    /// # 引数
+    /// * `email` - 更新するユーザーのメールアドレス
+    /// * `username` - 新しいユーザー名（3文字以上）
+    /// * `phone` - 新しい電話番号（10桁以上の数字）
+    /// * `age` - 新しい年齢（0-150の範囲）
+    ///
+    /// # 戻り値
+    /// * `Ok(User)` - 更新されたユーザー情報
+    ///
+    /// # エラー
+    /// * `UserError::InvalidUsername` - ユーザー名が不正な場合
+    /// * `UserError::InvalidPhone` - 電話番号が不正な場合
+    /// * `UserError::InvalidAge` - 年齢が不正な場合
+    /// * `UserError::UserNotFound` - 指定されたメールアドレスのユーザーが存在しない場合
+    /// * `UserError::RepositoryError` - データの更新に失敗した場合
+    ///   既存のユーザー情報を更新します。
+    ///
+    /// # 引数
+    /// * `email` - 更新対象のユーザーのメールアドレス（変更不可）
+    /// * `username` - 新しいユーザー名
+    /// * `phone` - 新しい電話番号
+    /// * `age` - 新しい年齢
+    ///
+    /// # 戻り値
+    /// * `Ok(User)` - 更新されたユーザー情報
+    ///
+    /// # Errors
+    /// 以下の場合にエラーを返します：
+    /// * `UserError::InvalidUsername` - ユーザー名が3文字未満の場合
+    /// * `UserError::InvalidPhone` - 電話番号が10桁未満の場合
+    /// * `UserError::InvalidAge` - 年齢が150歳を超える場合
+    /// * `UserError::UserNotFound` - 指定されたメールアドレスのユーザーが存在しない場合
+    /// * `UserError::RepositoryError` - データの永続化に失敗した場合
     pub fn update_user(
         &self,
         email: String,
@@ -96,18 +185,79 @@ impl<T: UserRepositoryTrait> UserService<T> {
         Ok(user)
     }
 
+    /// 指定されたメールアドレスのユーザー情報を取得します。
+    ///
+    /// # 引数
+    /// * `email` - 検索するユーザーのメールアドレス
+    ///
+    /// # 戻り値
+    /// * `Ok(User)` - ユーザー情報
+    ///
+    /// # エラー
+    /// * `UserError::UserNotFound` - 指定されたメールアドレスのユーザーが存在しない場合
+    /// * `UserError::RepositoryError` - データの取得に失敗した場合
+    ///   指定されたメールアドレスのユーザー情報を取得します。
+    ///
+    /// # 引数
+    /// * `email` - 検索するユーザーのメールアドレス
+    ///
+    /// # 戻り値
+    /// * `Ok(User)` - 見つかったユーザー情報
+    ///
+    /// # Errors
+    /// 以下の場合にエラーを返します：
+    /// * `UserError::UserNotFound` - 指定されたメールアドレスのユーザーが存在しない場合
+    /// * `UserError::RepositoryError` - データの取得に失敗した場合
     pub fn get_user(&self, email: &str) -> Result<User, UserError> {
         self.repository
             .find_by_email(email)?
             .ok_or_else(|| UserError::UserNotFound(format!("User with email {} not found", email)))
     }
 
+    /// 全てのユーザー情報を取得します。
+    ///
+    /// # 戻り値
+    /// * `Ok(Vec<User>)` - ユーザー情報のリスト
+    ///
+    /// # エラー
+    /// * `UserError::RepositoryError` - データの取得に失敗した場合
+    ///   全てのユーザー情報を取得します。
+    ///
+    /// # 戻り値
+    /// * `Ok(Vec<User>)` - 全てのユーザー情報
+    ///
+    /// # Errors
+    /// 以下の場合にエラーを返します：
+    /// * `UserError::RepositoryError` - データの取得に失敗した場合
     pub fn list_users(&self) -> Result<Vec<User>, UserError> {
         self.repository
             .find_all()
             .map_err(UserError::RepositoryError)
     }
 
+    /// 指定されたメールアドレスのユーザーを削除します。
+    ///
+    /// # 引数
+    /// * `email` - 削除するユーザーのメールアドレス
+    ///
+    /// # 戻り値
+    /// * `Ok(())` - ユーザーの削除に成功した場合
+    ///
+    /// # エラー
+    /// * `UserError::UserNotFound` - 指定されたメールアドレスのユーザーが存在しない場合
+    /// * `UserError::RepositoryError` - データの削除に失敗した場合
+    ///   指定されたメールアドレスのユーザーを削除します。
+    ///
+    /// # 引数
+    /// * `email` - 削除するユーザーのメールアドレス
+    ///
+    /// # 戻り値
+    /// * `Ok(())` - 削除成功
+    ///
+    /// # Errors
+    /// 以下の場合にエラーを返します：
+    /// * `UserError::UserNotFound` - 指定されたメールアドレスのユーザーが存在しない場合
+    /// * `UserError::RepositoryError` - データの削除に失敗した場合
     pub fn delete_user(&self, email: &str) -> Result<(), UserError> {
         if !self
             .repository
@@ -122,6 +272,16 @@ impl<T: UserRepositoryTrait> UserService<T> {
         Ok(())
     }
 
+    /// メールアドレスの形式を検証します。
+    ///
+    /// # 引数
+    /// * `email` - 検証するメールアドレス
+    ///
+    /// # 戻り値
+    /// * `Ok(())` - 検証に成功した場合
+    ///
+    /// # エラー
+    /// * `UserError::InvalidEmail` - メールアドレスの形式が不正な場合
     fn validate_email(&self, email: &str) -> Result<(), UserError> {
         let email_regex = Regex::new(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$").unwrap();
         if !email_regex.is_match(email) {
@@ -133,6 +293,16 @@ impl<T: UserRepositoryTrait> UserService<T> {
         Ok(())
     }
 
+    /// ユーザー名の長さを検証します。
+    ///
+    /// # 引数
+    /// * `username` - 検証するユーザー名
+    ///
+    /// # 戻り値
+    /// * `Ok(())` - 検証に成功した場合
+    ///
+    /// # エラー
+    /// * `UserError::InvalidUsername` - ユーザー名が3文字未満の場合
     fn validate_username(&self, username: &str) -> Result<(), UserError> {
         if username.trim().is_empty() || username.len() < 3 {
             return Err(UserError::InvalidUsername(
@@ -142,6 +312,16 @@ impl<T: UserRepositoryTrait> UserService<T> {
         Ok(())
     }
 
+    /// 電話番号の形式を検証します。
+    ///
+    /// # 引数
+    /// * `phone` - 検証する電話番号
+    ///
+    /// # 戻り値
+    /// * `Ok(())` - 検証に成功した場合
+    ///
+    /// # エラー
+    /// * `UserError::InvalidPhone` - 電話番号が10桁未満の場合
     fn validate_phone(&self, phone: &str) -> Result<(), UserError> {
         let phone_regex = Regex::new(r"^\d{10,}$").unwrap();
         if !phone_regex.is_match(phone) {
@@ -152,6 +332,16 @@ impl<T: UserRepositoryTrait> UserService<T> {
         Ok(())
     }
 
+    /// 年齢の範囲を検証します。
+    ///
+    /// # 引数
+    /// * `age` - 検証する年齢
+    ///
+    /// # 戻り値
+    /// * `Ok(())` - 検証に成功した場合
+    ///
+    /// # エラー
+    /// * `UserError::InvalidAge` - 年齢が150歳を超える場合
     fn validate_age(&self, age: u32) -> Result<(), UserError> {
         if age > 150 {
             return Err(UserError::InvalidAge(

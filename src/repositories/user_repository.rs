@@ -1,5 +1,9 @@
+//! ユーザーデータの永続化を担うモジュール
+//!
+//! このモジュールは、JSONファイルを使用してユーザーデータを保存および読み込む機能を提供します。
+//! 保存先のファイルパスは環境変数`USER_DATA_FILE`で指定できます。
+
 use crate::models::user::User;
-use serde_json;
 use std::collections::HashMap;
 use std::env;
 use std::fs;
@@ -8,15 +12,71 @@ use std::path::Path;
 #[cfg(test)]
 use mockall::automock;
 
+/// ユーザーデータの永続化操作を定義するトレイト
+///
+/// このトレイトは、ユーザーデータのCRUD操作を定義します。
+/// 実装は異なるストレージバックエンドに対して行うことができます。
 #[cfg_attr(test, automock)]
 pub trait UserRepositoryTrait {
+    /// ユーザーを保存します。
+    ///
+    /// # 引数
+    /// * `user` - 保存するユーザー情報
+    ///
+    /// # 戻り値
+    /// * `Ok(())` - 保存に成功した場合
+    ///
+    /// # Errors
+    /// 以下の場合にエラーを返します：
+    /// * ファイルの読み書きに失敗した場合
+    /// * JSONのシリアライズに失敗した場合
     fn save(&self, user: &User) -> Result<(), String>;
+
+    /// 指定されたメールアドレスのユーザーを検索します。
+    ///
+    /// # 引数
+    /// * `email` - 検索するユーザーのメールアドレス
+    ///
+    /// # 戻り値
+    /// * `Ok(Some(User))` - ユーザーが見つかった場合
+    /// * `Ok(None)` - ユーザーが見つからなかった場合
+    ///
+    /// # Errors
+    /// 以下の場合にエラーを返します：
+    /// * ファイルの読み込みに失敗した場合
+    /// * JSONのデシリアライズに失敗した場合
     fn find_by_email(&self, email: &str) -> Result<Option<User>, String>;
+
+    /// 全てのユーザーを取得します。
+    ///
+    /// # 戻り値
+    /// * `Ok(Vec<User>)` - 全ユーザーのリスト
+    ///
+    /// # Errors
+    /// 以下の場合にエラーを返します：
+    /// * ファイルの読み込みに失敗した場合
+    /// * JSONのデシリアライズに失敗した場合
     fn find_all(&self) -> Result<Vec<User>, String>;
+
+    /// 指定されたメールアドレスのユーザーを削除します。
+    ///
+    /// # 引数
+    /// * `email` - 削除するユーザーのメールアドレス
+    ///
+    /// # 戻り値
+    /// * `Ok(true)` - ユーザーが存在し、削除に成功した場合
+    /// * `Ok(false)` - ユーザーが存在しなかった場合
+    ///
+    /// # Errors
+    /// 以下の場合にエラーを返します：
+    /// * ファイルの読み書きに失敗した場合
+    /// * JSONのシリアライズ/デシリアライズに失敗した場合
     fn delete(&self, email: &str) -> Result<bool, String>;
 }
 
+/// JSONファイルベースのユーザーリポジトリの実装
 pub struct UserRepository {
+    /// ユーザーデータを保存するJSONファイルのパス
     file_path: String,
 }
 
@@ -27,11 +87,26 @@ impl Default for UserRepository {
 }
 
 impl UserRepository {
+    /// 新しいUserRepositoryインスタンスを作成します。
+    ///
+    /// 環境変数`USER_DATA_FILE`が設定されている場合はその値を、
+    /// 設定されていない場合は"userdata.json"をファイルパスとして使用します。
+    ///
+    /// # 戻り値
+    /// * `Self` - 新しいUserRepositoryインスタンス
     pub fn new() -> Self {
         let file_path = env::var("USER_DATA_FILE").unwrap_or_else(|_| "userdata.json".to_string());
         Self { file_path }
     }
 
+    /// JSONファイルからユーザーデータを読み込みます。
+    ///
+    /// # 戻り値
+    /// * `Ok(HashMap<String, User>)` - ユーザーデータのマップ（メールアドレスをキーとする）
+    ///
+    /// # エラー
+    /// * ファイルの読み込みに失敗した場合
+    /// * JSONのデシリアライズに失敗した場合
     fn read_users(&self) -> Result<HashMap<String, User>, String> {
         if !Path::new(&self.file_path).exists() {
             return Ok(HashMap::new());
@@ -47,6 +122,17 @@ impl UserRepository {
         serde_json::from_str(&content).map_err(|e| format!("Failed to parse JSON: {}", e))
     }
 
+    /// ユーザーデータをJSONファイルに書き込みます。
+    ///
+    /// # 引数
+    /// * `users` - 書き込むユーザーデータのマップ
+    ///
+    /// # 戻り値
+    /// * `Ok(())` - 書き込みに成功した場合
+    ///
+    /// # エラー
+    /// * JSONのシリアライズに失敗した場合
+    /// * ファイルの書き込みに失敗した場合
     fn write_users(&self, users: &HashMap<String, User>) -> Result<(), String> {
         let content = serde_json::to_string_pretty(users)
             .map_err(|e| format!("Failed to serialize JSON: {}", e))?;
