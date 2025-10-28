@@ -42,7 +42,7 @@ impl UserCommand {
     ///
     /// # Errors
     /// 以下の場合にエラーを返します：
-    /// * 引数の数が不正な場合（"Usage: create <email> <username> <phone> <age>"）
+    /// * 引数の数が不正な場合（"Usage: create \<email\> \<username\> \<phone\> \<age\>"）
     /// * 年齢の形式が不正な場合（"Invalid age format"）
     /// * メールアドレス、ユーザー名、電話番号、年齢のバリデーションに失敗した場合
     /// * ユーザーの保存に失敗した場合
@@ -85,7 +85,7 @@ impl UserCommand {
     ///
     /// # Errors
     /// 以下の場合にエラーを返します：
-    /// * 引数の数が不正な場合（"Usage: update <email> <username> <phone> <age>"）
+    /// * 引数の数が不正な場合（"Usage: update \<email\> \<username\> \<phone\> \<age\>"）
     /// * 年齢の形式が不正な場合（"Invalid age format"）
     /// * 指定されたメールアドレスのユーザーが存在しない場合
     /// * メールアドレス、ユーザー名、電話番号、年齢のバリデーションに失敗した場合
@@ -149,7 +149,7 @@ impl UserCommand {
     ///
     /// # Errors
     /// 以下の場合にエラーを返します：
-    /// * 引数の数が不正な場合（"Usage: get <email>"）
+    /// * 引数の数が不正な場合（"Usage: get \<email\>"）
     /// * 指定されたメールアドレスのユーザーが存在しない場合
     /// * ユーザー情報の取得に失敗した場合（"Failed to get user: ..."）
     pub fn get(&self, args: &[String]) -> Result<(), String> {
@@ -178,7 +178,7 @@ impl UserCommand {
     ///
     /// # Errors
     /// 以下の場合にエラーを返します：
-    /// * 引数の数が不正な場合（"Usage: delete <email>"）
+    /// * 引数の数が不正な場合（"Usage: delete \<email\>"）
     /// * 指定されたメールアドレスのユーザーが存在しない場合
     /// * ユーザーの削除に失敗した場合（"Failed to delete user: ..."）
     pub fn delete(&self, args: &[String]) -> Result<(), String> {
