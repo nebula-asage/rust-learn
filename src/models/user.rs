@@ -13,7 +13,7 @@ pub struct User {
     /// 例: "user@example.com"
     ///
     /// # Examples
-    /// ```
+    /// ```rust,ignore
     /// let user = User {
     ///     email: "user@example.com".to_string(),
     ///     // ... 他のフィールド
