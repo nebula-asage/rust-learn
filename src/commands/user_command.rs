@@ -1,11 +1,11 @@
 use crate::models::user::User;
-use crate::repositories::user_repository::UserRepository;
+use crate::repositories::user_repository::UserRepositoryImpl;
 use crate::services::user_service::UserService;
 
 /// コマンドライン操作を処理するコマンドハンドラ
 pub struct UserCommand {
     /// ユーザー操作のビジネスロジックを実装するサービス
-    service: UserService<UserRepository>,
+    service: UserService<UserRepositoryImpl>,
 }
 
 impl Default for UserCommand {
@@ -23,7 +23,7 @@ impl UserCommand {
     /// # Errors
     /// このメソッドはエラーを返しません。
     pub fn new() -> Self {
-        let repository = UserRepository::new();
+        let repository = UserRepositoryImpl::new();
         let service = UserService::new(repository);
         Self { service }
     }

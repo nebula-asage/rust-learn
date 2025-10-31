@@ -17,7 +17,7 @@ use mockall::automock;
 /// このトレイトは、ユーザーデータのCRUD操作を定義します。
 /// 実装は異なるストレージバックエンドに対して行うことができます。
 #[cfg_attr(test, automock)]
-pub trait UserRepositoryTrait {
+pub trait UserRepository {
     /// ユーザーを保存します。
     ///
     /// # 引数
@@ -75,18 +75,18 @@ pub trait UserRepositoryTrait {
 }
 
 /// JSONファイルベースのユーザーリポジトリの実装
-pub struct UserRepository {
+pub struct UserRepositoryImpl {
     /// ユーザーデータを保存するJSONファイルのパス
     file_path: String,
 }
 
-impl Default for UserRepository {
+impl Default for UserRepositoryImpl {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl UserRepository {
+impl UserRepositoryImpl {
     /// 新しいUserRepositoryインスタンスを作成します。
     ///
     /// 環境変数`USER_DATA_FILE`が設定されている場合はその値を、
@@ -141,7 +141,7 @@ impl UserRepository {
     }
 }
 
-impl UserRepositoryTrait for UserRepository {
+impl UserRepository for UserRepositoryImpl {
     fn save(&self, user: &User) -> Result<(), String> {
         let mut users = self.read_users()?;
         users.insert(user.email.clone(), user.clone());
@@ -187,7 +187,7 @@ mod tests {
             env::set_var("USER_DATA_FILE", temp_file.path().to_str().unwrap());
         }
 
-        let repo = UserRepository::new();
+        let repo = UserRepositoryImpl::new();
         let user = create_test_user();
 
         // Test save
@@ -206,7 +206,7 @@ mod tests {
             env::set_var("USER_DATA_FILE", temp_file.path().to_str().unwrap());
         }
 
-        let repo = UserRepository::new();
+        let repo = UserRepositoryImpl::new();
         let user1 = create_test_user();
         let mut user2 = create_test_user();
         user2.email = "test2@example.com".to_string();
@@ -225,7 +225,7 @@ mod tests {
             env::set_var("USER_DATA_FILE", temp_file.path().to_str().unwrap());
         }
 
-        let repo = UserRepository::new();
+        let repo = UserRepositoryImpl::new();
         let user = create_test_user();
 
         repo.save(&user).unwrap();

@@ -1,9 +1,9 @@
 use crate::models::user::User;
-use crate::repositories::user_repository::UserRepositoryTrait;
+use crate::repositories::user_repository::UserRepository;
 use regex::Regex;
 
 /// ユーザー管理のビジネスロジックを実装するサービス
-pub struct UserService<T: UserRepositoryTrait> {
+pub struct UserService<T: UserRepository> {
     /// ユーザーデータの永続化を担当するリポジトリ
     repository: T,
 }
@@ -34,7 +34,7 @@ impl From<String> for UserError {
     }
 }
 
-impl<T: UserRepositoryTrait> UserService<T> {
+impl<T: UserRepository> UserService<T> {
     /// 新しいUserServiceインスタンスを作成します。
     ///
     /// # 引数
@@ -355,10 +355,10 @@ impl<T: UserRepositoryTrait> UserService<T> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::repositories::user_repository::MockUserRepositoryTrait;
+    use crate::repositories::user_repository::MockUserRepository;
 
-    fn create_mock_repository() -> MockUserRepositoryTrait {
-        MockUserRepositoryTrait::new()
+    fn create_mock_repository() -> MockUserRepository {
+        MockUserRepository::new()
     }
 
     #[test]
